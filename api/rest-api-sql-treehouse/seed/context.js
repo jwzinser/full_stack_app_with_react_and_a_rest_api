@@ -1,5 +1,5 @@
 'use strict';
-
+// this file should not be modified
 const sqlite3 = require('sqlite3');
 
 class Context {

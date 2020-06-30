@@ -1,6 +1,7 @@
 'use strict';
 
-// load modules
+// load modules, add cors, add db and routes
+// adds Course and user models
 const cors = require('cors')
 const express = require('express');
 const morgan = require('morgan');
@@ -17,7 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 
-
+// adds sequalize authentication
 db.sequelize
   .authenticate()
   .then(() => {
