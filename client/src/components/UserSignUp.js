@@ -51,7 +51,7 @@ class UserSignUp extends Component {
         confirmPassword
       } = this.state;
       const { from } = this.props.location.state || { from: { pathname: '/courses/create' } };
-      axios.post('http://localhost:5000/api/users', {firstName, lastName, emailAddress,password, confirmPassword})
+      axios.post('http://localhost:5000/api/users', {firstName, lastName, emailAddress, password, confirmPassword})
         .then(() => {
           const context = this.props.context;
           context.actions.signIn(
