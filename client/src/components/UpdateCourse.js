@@ -32,7 +32,7 @@ class UpdateCourse extends Component {
                     }
                 }).catch((e) => {
                     if(e){
-                        this.props.history.push('/notfound') //if requested course not exist, redirect to notfound
+                        this.props.history.push('/notfound') 
                     }
             })
         }

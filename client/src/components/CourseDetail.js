@@ -31,9 +31,9 @@ class CourseDetail extends Component {
     }
 
     deleteCourse = () => {
-        const id = this.props.match.params.id; //get the params id
-        const context = this.props.context; //get the context prop 
-        //create a axios instance with configured values
+        const id = this.props.match.params.id; 
+        const context = this.props.context; 
+        //xios instance with conf values
         const axiosInstance = axios.create({
             baseURL:`http://localhost:5000`,
             headers: {

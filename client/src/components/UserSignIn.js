@@ -7,7 +7,6 @@ class UserSignIn extends Component {
         password: "",
         errors: ""
     }
-    //set the value fields into state
     handleChange = (event) => {
         const target = event.target;
         const value = target.value;
@@ -21,7 +20,6 @@ class UserSignIn extends Component {
     handleSubmit = (e) => {
         e.preventDefault();
         const context = this.props.context;
-        //get the from from the state
         const { from } = this.props.location.state || { from: { pathname: '/courses/create' } };
         context.actions.signIn(
             this.state.emailAddress, 
@@ -33,7 +31,7 @@ class UserSignIn extends Component {
             }
         }).catch((e) => {
             this.setState({
-                errors: e.response.data.message //catch the err in the response object
+                errors: e.response.data.message 
             })
         });
 
