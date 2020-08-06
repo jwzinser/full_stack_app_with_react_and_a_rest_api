@@ -1,57 +1,27 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from "react";
+import { Link } from "react-router-dom";
 
-
-const Header = ({context , ...props}) => {
-    return(
-        <div className="header">
-            <div className="bounds">
-                <Link to="/" className="header--logo">
-                <h1>
-                    Courses       
-                </h1>
-                </Link>
-                    {context.authUser ? (
-                        <nav>
-                            <Link to="/signout" className="signout">
-                                <span className="a1">
-                                    Sign Out
-                                </span>
-                            </Link>
-
-                            <span>
-                            Welcome,
-                            {context.authUser.firstName}
-                            &nbsp;
-                            {context.authUser.lastName} !
-                            </span>
-                        </nav>
-                    ) : (
-                        <nav>
-                            <Link to={{
-                                pathname:"/signin",
-                                state: {from: props.location},
-                                className: "signin"
-                            }}
-                             >
-                                <span className="a1">
-                                    Sign in
-                                </span>
-                            </Link>
-                            <Link to={{
-                                pathname:"/signup",
-                                state: {from: props.location},
-                                className: "signup"
-                            }}>
-                                <span className="a1">   
-                                Sign Up
-                                </span>
-                            </Link>
-                        </nav>
-                    )}
-            </div>
-        </div>
-    )
-}
-
-export default Header;
+//create the header for link to main page and signing in
+export default ({ context }) => {
+  const authUser = context.authenticatedUser;
+  return (
+    <div className="header">
+      <div className="bounds">
+        <h1 className="header--logo"><Link to="/">Courses</Link></h1>
+        <nav>
+          {authUser ?
+            <React.Fragment>
+              <span>Welcome, {authUser.name}!</span>
+              <Link to="/signout">Sign Out</Link>
+            </React.Fragment>
+            :
+            <React.Fragment>
+              <Link className="signup" to="/signup">Sign Up</Link>
+              <Link className="signin" to="/signin">Sign In</Link>
+            </React.Fragment>
+          }
+        </nav>
+      </div>
+    </div>
+  );
+};

@@ -1,195 +1,132 @@
-import React, { Component } from 'react'
-import axios from 'axios';
-import {Link} from 'react-router-dom';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import Form from "./Form";
 
-class UserSignUp extends Component {
-    
-    state = {
-      firstName: "",
-      lastName: "",
-      emailAddress: "",
-      password: "",
-      confirmPassword: "",
-      errors:"",
-      errorsPassword:""
-    }
-    //set the values into state
-    handleChange = (event) => {
-      const target = event.target;
-      const value = target.value;
-      const name = target.name;
-      this.setState({
-          [name]: value
-      })
-      
-    }
-    //check if passowrds match or not, this is on the client side give a user better experience
-    handleConfirmPassword = (event) => {
-      if (event.target.value !== this.state.password){
-        this.setState({
-          errorsPassword:"Passwords do not match!"
-        })
-      }else{
-        this.setState({
-          errorsPassword:""
-        })
-      }
-      this.setState({confirmPassword: event.target.value})
-    }
-    //when cancel, push to the defaulr
-    handleCancel = () => {
-      this.props.history.push('/');
-    }
-    //submit the user body to server
-    handleSubmit = (e) => {
-      e.preventDefault();
-      const {
-        firstName,
-        lastName,
-        emailAddress,
-        password,
-        confirmPassword
-      } = this.state;
-      const { from } = this.props.location.state || { from: { pathname: '/courses/create' } };
-      axios.post('http://localhost:5000/api/users', {firstName, lastName, emailAddress, password, confirmPassword})
-        .then(() => {
-          const context = this.props.context;
-          context.actions.signIn(
-              this.state.emailAddress, 
-              this.state.password
-          ).then((user) => {
-            if(user.status === 200){
-              this.props.history.push(from);
-            }
-          })
-        }).catch((e) => {
-          this.setState({
-            errors: e.response.data.errors //catch the err in the response object
-          })
-        })
-    }
+export default class UserSignUp extends Component {
 
-    render() {
-        return (
-          <div className="bounds">
-            <div className="grid-33 centered signin">
-              {
-                this.state.errors ? (
-                  <div>
-                      <h2 className="validation--errors--label">Validation errors</h2>
-                          <div className="validation-errors">
-                              <ul>
-                                  {
-                                      this.state.errors.map((error) => {
-                                          return <li key={error}>{error}</li>
-                                      })
-                                  }
-                              </ul>
-                          </div>
-                      </div>
-                  ) :  null                          
-              }
-              {
-                this.state.errorsPassword ? (
-                  <div>
-                      <h2 className="validation--errors--label">Validation errors</h2>
-                          <div className="validation-errors">
-                              <ul>
-                                 <li>{this.state.errorsPassword}</li>
-                              </ul>
-                          </div>
-                  </div>
-                ) : null
-              }
-              <h1>Sign Up</h1>
-              <div>
-                <form>
-                    <div>
-                      <input 
-                        id="firstName" 
-                        name="firstName" 
-                        type="text" 
-                        className="" 
-                        placeholder="First Name" 
-                        onChange= {this.handleChange}
-                        value={this.state.firstName}
-                      />
-                    </div>
-                    <div>
-                      <input 
-                        id="lastName" 
-                        name="lastName" 
-                        type="text" 
-                        className="" 
-                        placeholder="Last Name" 
-                        onChange= {this.handleChange}
-                        value={this.state.lastName}
-                      />
-                    </div>
-                    <div>
-                      <input 
-                        id="emailAddress" 
-                        name="emailAddress" 
-                        type="text" 
-                        className="" 
-                        placeholder="Email Address" 
-                        onChange= {this.handleChange}
-                        value={this.state.emailAddress}
-                      />
-                    </div>
-                    <div>
-                        <input 
-                            id="password" 
-                            name="password" 
-                            type="password" 
-                            className="" 
-                            placeholder="Password" 
-                            onChange= {this.handleChange}
-                            value={this.state.password}
-                        />
-                    </div>
-                    <div>
-                        <input 
-                        id="confirmPassword" 
-                        name="confirmPassword" 
-                        type="password" 
-                        className="" 
-                        placeholder="Confirm Password"
-                        onChange= {this.handleConfirmPassword}
-                        value={this.state.confirmPassword}
-                      />
-                    </div>
-                    <div className="grid-100 pad-bottom">
-                        <button 
-                            className="button" 
-                            type="submit"
-                            onClick={this.handleSubmit}
-                        >
-                            Sign Up
-                        </button>
-                        <button 
-                            className="button button-secondary" 
-                            onClick={this.handleCancel}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-              </div>
-                <p>&nbsp;</p>
-                <p>Already have a user account? 
-                  Click 
-                  &nbsp;
-                  <Link to="/signin" className="a1">
-                    here 
-                  </Link>
-                  &nbsp;
-                  to sign in 
-                </p>
-            </div>
+  state = {
+    firstName: "",
+    lastName: "",
+    emailAddress: "",
+    password: "",
+    confirmPassword: "",
+    errors: []
+  };
+
+  //render user sign up page
+  render() {
+    return (
+      <div className="bounds">
+        <div className="grid-33 centered signin">
+          <h1>Sign Up</h1>
+          <Form
+            cancel={this.cancel}
+            errors={this.state.errors}
+            submit={this.submit}
+            submitButtonText="Sign Up"
+            elements={() => (
+              <React.Fragment>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  value={this.state.firstName}
+                  onChange={this.change}
+                  placeholder="First Name"
+                />
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  value={this.state.lastName}
+                  onChange={this.change}
+                  placeholder="Last Name"
+                />
+                <input
+                  id="emailAddress"
+                  name="emailAddress"
+                  type="text"
+                  value={this.state.emailAddress}
+                  onChange={this.change}
+                  placeholder="Email Address"
+                />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={this.state.password}
+                  onChange={this.change}
+                  placeholder="Password"
+                />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={this.state.confirmPassword}
+                  onChange={this.change}
+                  placeholder="Confirm Password"
+                />
+              </React.Fragment>
+            )}
+          />
+          <p>Already have a user account? <Link to="/signin">Click here</Link> to sign in!</p>
         </div>
-        )
-    }
-}
+      </div>
+    );
+  }
 
-export default UserSignUp;
+  //update state based on change event
+  change = event => {
+    const name = event.target.name;
+    const value = event.target.value;
+    this.setState(() => {
+      return {
+        [name]: value
+      };
+    });
+  };
+
+  //submit sign up details and check for errors
+  submit = () => {
+    const { context } = this.props;
+    const {
+      firstName,
+      lastName,
+      emailAddress,
+      password,
+      confirmPassword
+    } = this.state;
+    const user = {
+      firstName,
+      lastName,
+      emailAddress,
+      password
+    };
+    if (confirmPassword !== password) {
+      this.setState(() => {
+        return {
+          errors: ["Password confirmation does not match."]
+        };
+      });
+    } else {
+      context.data.createUser(user)
+        .then(errors => {
+          if (errors) {
+            this.setState({errors});
+          } else {
+            context.actions.signIn(emailAddress, password).then(() => {
+              this.props.history.push("/");
+            });
+          }
+        })
+        .catch(err => {
+          this.props.history.push("/error");
+        });
+    }
+  };
+
+  cancel = () => {
+    this.props.history.push("/");
+  };
+  
+}

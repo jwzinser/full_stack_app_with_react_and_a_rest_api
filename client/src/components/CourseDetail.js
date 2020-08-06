@@ -1,129 +1,141 @@
-import React , { Component } from 'react';
-import axios from 'axios';
-import {Link} from 'react-router-dom';
+import React, { Component } from 'react';
+import ReactMarkdown from 'react-markdown';
+import ErrorsDisplay from './ErrorsDisplay.js';
+import { Link } from 'react-router-dom';
 
-const ReactMarkdown = require('react-markdown');
+export default class CourseDetail extends Component {
 
-class CourseDetail extends Component {
-    state = {
-        course: [],
-        errors:""
+    constructor(props) {
+      super(props);
+      this.state = {
+        course : [],
+        student: [],
+        params: props.match.params,
+        user: [],
+        errors:[],
+        authenticatedUser: [],
+        context: this.props.context
+      };
+    }
+  
+
+
+    // sets state
+    componentDidMount(){
+        const { context } = this.props;
+        fetch(`http://localhost:5000/api/courses/${this.state.params.id}`)
+            .then( response => response.json())
+            .then( responseData => {
+                this.setState({ 
+                course: responseData,
+                student: responseData.student,
+                context: this.props.context,
+                authenticatedUser: context.authenticatedUser
+                });
+            return responseData
+            })
     }
 
-    componentDidMount(){
-        //when the app component start to render, call the api to get one course
-        
-        const id = this.props.match.params.id; 
-        if(id !== 'create'){
-            axios.get(`http://localhost:5000/api/courses/${id}`)
-                .then((course) => {
-                    //set the course data to the state
-                    this.setState({
-                        course: course.data
-                    })
-                }).catch((e) => {
-                    if(e){
-                        this.props.history.push('/notfound') //if the resources not available, redirect to /notfound
+    //  delete course if authorized user
+    submit = () => {
+        const { context } = this.props;
+        const { emailAddress, password } = context.authenticatedUser;
+        const path = `/courses/${this.state.params.id}`;
+        const currentUserId = Number(this.props.context.authenticatedUser.id)
+        const courseUserId = Number(this.state.course.userId)
+        if (currentUserId === courseUserId) {
+            context.data.deleteCourse(emailAddress, password, path)
+                .then( errors => {
+                    if (errors.length) {
+                        this.setState({errors});
+                    } else {
+                        this.props.history.push('/');
                     }
+                })
+                .catch( err => {
+                    this.props.history.push('/error');
+                })
+        } else {
+            this.setState({
+                errors: ['Not authorized to delete course.']
             })
         }
-        
     }
 
-    deleteCourse = () => {
-        const id = this.props.match.params.id; 
-        const context = this.props.context; 
-        //xios instance with conf values
-        const axiosInstance = axios.create({
-            baseURL:`http://localhost:5000`,
-            headers: {
-                "Authorization": `Basic ${context.encodedCredentials}`,
-                "Content-Type": "application/json"
-            }
-        });
-        //delete the course with the auth user info
-        axiosInstance.delete(`/api/courses/${id}`)
-            .then(() => {
-                this.props.history.push('/') //redirect to default
-            })
-            .catch((e) => {
-                this.setState({
-                    errors: e.response.data.errors //catch the err in the response object
-                })
-                //if unaut, then forbidden to access the resources
-                if(e.response.status === 401){
-                    this.props.history.push('/forbidden') //if 401, then redirect to forbidden
-                }
-        })
+
+
+    handleSubmit = (e) => {
+        e.preventDefault();
+        const confirmDelete = window.confirm("Delete course?");
+        if (confirmDelete) {
+            this.submit();
+        }
     }
-    render(){
-        if (!this.state.course.User) {
-            return null;
-        } //if the data hasn't been async into state yet, return null to prevent error throwing
-        const id = this.props.match.params.id; //get the pramas id
-        const context = this.props.context; //get the context props
-      
-        return(
-        
-        <div className="bounds course--detail">
-            <div className="grid-66">
-                <div className="course--header">
-                {(context.authUser 
-                && 
-                (context.authUser.id === this.state.course.User.id)) ? (
-                     <div className="actions--bar">
-                     <div className="bounds">
-                         <div className="grid-100">
-                             <span>
-                                 <Link to={`/courses/${id}/update`} className="button a1" >
-                                     Update Course
-                                 </Link>
-                                 
-                                 <button 
-                                     className="button" 
-                                     onClick={this.deleteCourse}
-                                 >
-                                     Delete Course
-                                 </button>
-                             </span>
-                         </div>
-                         </div>
-                     </div>
-                ): null
-                
+
+    // add update and delete buttons when corresponds 
+    // (if user is authorized, if that user created the course)
+    render() {
+        const {errors} = this.state;
+        let buttons;
+        if (this.props.context.authenticatedUser) {
+            const currentUserId = Number(this.props.context.authenticatedUser.id)
+            const courseUserId = Number(this.state.course.userId)
+            if (currentUserId === courseUserId) {
+                buttons = (           
+                <div className="grid-100"><span>
+                    <Link className="button" to={`/courses/${this.state.params.id}/update`}>Update Course</Link>
+                    <button onClick={this.handleSubmit} className="button">Delete Course</button>
+                   </span>
+                    <Link className="button button-secondary" to="/">Return to List</Link></div>);
+            } else {
+                buttons = (
+                    <div className="grid-100"><Link
+                    className="button button-secondary" to="/">Return to List</Link></div>
+                )
             }
-               <Link to={`/`} className="button button-secondary a1" >
-                    Return to List
-                </Link>
-                    <h4 className="course--label">Course</h4>
-                    <h3 className="course--title">{this.state.course.title}</h3>
-                    <p>By {this.state.course.User.firstName} {this.state.course.User.lastName}</p>
+        } else {
+            buttons = (
+                <div className="grid-100"><Link
+                className="button button-secondary" to="/">Return to List</Link></div>
+            )
+        }
+        return (
+            <div>
+                <div className="actions--bar">
+                <div className="bounds">
+                    {buttons}
                 </div>
-                <div className="course--description">
-                    <ReactMarkdown source={this.state.course.description} />
                 </div>
-            </div>
-            <div className="grid-25 grid-right">
-                <div className="course--stats">
-                <ul className="course--stats--list">
-                    <li className="course--stats--list--item">
-                    <h4>Estimated Time</h4>
-                    <h3>{this.state.course.estimatedTime}</h3>
-                    </li>
-                    <li className="course--stats--list--item">
-                    <h4>Materials Needed</h4>
-                    <ul>
-                        <li>
-                            <ReactMarkdown source={this.state.course.materialsNeeded} />
+                <ErrorsDisplay errors={errors} />
+                <div className="bounds course--detail">
+                    <div className="grid-66">
+                    <div className="course--header">
+                        <h4 className="course--label">Course</h4>
+                        <h3 className="course--title">{this.state.course.title}</h3>
+                        <p>By {`${this.state.student.firstName} ${this.state.student.lastName}`}</p>
+                    </div>
+                    <div className="course--description">
+                        <ReactMarkdown source={this.state.course.description} /> 
+                    </div>
+                    </div>
+                    <div className="grid-25 grid-right">
+                    <div className="course--stats">
+                        <ul className="course--stats--list">
+                        <li className="course--stats--list--item">
+                            <h4>Estimated Time</h4>
+                            <h3>{this.state.course.estimatedTime}</h3>
                         </li>
-                    </ul>
-                    </li>
-                </ul>
+                        <li className="course--stats--list--item">
+                            <h4>Materials Needed</h4>
+                            <ul>
+                                <ReactMarkdown source={this.state.course.materialsNeeded} /> 
+                            </ul>
+                        </li>
+                        </ul>
+                    </div>
+                    </div>
                 </div>
             </div>
-          </div>
-        )
+        );
     }
 }
-
-export default CourseDetail;
