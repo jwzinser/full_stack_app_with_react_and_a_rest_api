@@ -5,17 +5,20 @@ import Data from "./Data";
 const Context = React.createContext();
 
 export class Provider extends Component {
+  state = {authenticatedUser: Cookies.getJSON('authenticatedUser') || null};
 
   constructor() {
     super();
     this.data = new Data();
-    this.state = {authenticatedUser: Cookies.getJSON('authenticatedUser') || null};
   }
 
   //setup context provider
   render() {
+
+    const { authenticatedUser } = this.state;
+
     const value = {
-      authenticatedUser: this.state.authenticatedUser,
+      authenticatedUser: authenticatedUser,
       data: this.data,
       actions: {
         getCourses: this.getCourses,
@@ -24,7 +27,9 @@ export class Provider extends Component {
         signOut: this.signOut
       }
     };
-    return (<Context.Provider value={value}>{this.props.children}</Context.Provider>);
+    const { children } = this.props;
+
+    return (<Context.Provider value={value}>{children}</Context.Provider>);
   }
 
   //pass context to functions
